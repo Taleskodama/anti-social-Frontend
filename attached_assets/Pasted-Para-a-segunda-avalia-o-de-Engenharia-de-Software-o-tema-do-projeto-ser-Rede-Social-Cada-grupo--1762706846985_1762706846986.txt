@@ -1,0 +1,109 @@
+Para a segunda avaliação de Engenharia de Software, o tema do projeto será Rede Social. Cada grupo
+deverá propor, documentar e implementar um Mínimo Produto Viável (MVP) com esse foco. A Rede
+Social pode ser de qualquer tipo (voltada para hobbies, educação, esportes, negócios, música, animais
+de estimação etc.), mas deve conter elementos essenciais de interação entre usuários. O trabalho consiste em duas partes:
+Parte 1) Produção da documentação de software
+O documento deve ser sucinto, organizado em seções conforme a teoria (Livro do Sommerville: Capítulo 4 – Engenharia de requisitos. Aula teórica 04).
+• Prefácio
+• Introdução
+• Glossário – [Opcional]
+• Documentos de requisitos do usuário
+• Arquitetura de sistema
+• Especificação de requisitos do sistema
+• Modelos do sistema
+• Planejamento de desenvolvimento (Ágil, por planos, cascata)
+• Estimativas de prazos, planos de entregas e ciclos
+• Projeto de implementação
+• Planos de teste
+• Evolução do sistema
+• Apêndice – [Opcional]
+• Índice – [Opcional]
+Itens obrigatórios:
+• Diagramas UML
+o Casos de uso
+o Sequência
+o Classes
+o Estados
+o Outros diagramas (opcional)
+• Documento de requisitos
+Sugestão: Limitar o documento a quinze páginas.
+Parte 2) Prova de Conceito
+MVP – Nível Básico (Obrigatório):
+• Cadastro de usuários simples (nome e senha)
+• Login básico
+• Página inicial com posts fixos (não precisa ser dinâmica)
+MVP – Nível Intermediário (Opcional):
+• Criação e edição de perfil
+• Postagem de conteúdo (texto ou imagem)
+• Interações sociais básicas (curtir OU comentar)
+MVP – Nível Avançado (Opcional, para destaque):
+• Sistema de amizade/seguidores
+• Feed personalizado (posts de amigos/seguidos)
+• Notificações simples (ex.: curtidas, comentários, novas conexões)
+• Mensagens privadas entre usuários
+Demonstração Funcional:
+• Apresentar o funcionamento da Rede Social, evidenciando sua viabilidade.
+• A apresentação deve demonstrar as funcionalidades do sistema e justificar a motivação da
+Rede Social (porque existe, qual problema resolve, quem é o público-alvo).
+• Pode constar na prova de conceito o modelo de negócios da solução proposta.
+Entregas:
+• Um arquivo PDF com a documentação.
+• Um arquivo ZIP com os códigos do MVP.
+Apenas um integrante do grupo deve realizar a entrega.
+
+Requisitos Funcionais do Usuário (RFU):
+RFU-01: O usuário deve poder se cadastrar no sistema com email, nome e senha.
+RFU-02: O usuário deve poder fazer login no sistema com suas credenciais
+RFU-03: O usuário deve poder criar e editar seu perfil, adicionando suas metas de desenvolvimento.
+RFU-04: O usuário deve poder registrar uma atividade (ex: texto sobre um livro lido).
+RFU-05: O usuário deve poder "Incentivar" (curtir) um registro de outro usuário.
+Requisitos Não-Funcionais do Usuário (RNFU):
+RNFU-01: O tempo de resposta para autenticação e para o registro de uma nova atividade não deve exceder 3 segundos em uma conexão de internet padrão.
+RNFU-02: As metas de desenvolvimento e as atividades registradas pelo usuário não devem ser perdidas em caso de falha de sessão. O sistema deve garantir a persistência dos dados após a submissão.
+RNFU-03: Um usuário só pode ter uma conta por email.
+
+Arquitetura de sistema (Pessoal, o que acham dessa arquitetura?)
+O projeto "The (Anti)Social Network" adotará o padrão de Arquitetura em Camadas. Esta abordagem foi escolhida por promover uma clara separação de preocupações (SoC), o que facilita a manutenção e a evolução do sistema. Como vantagem, ela "permite a substituição de camadas inteiras desde que a interface seja mantida", permitindo, por exemplo, que a interface do usuário seja modernizada no futuro sem impactar a lógica de negócios.
+Propomos uma arquitetura de 4 camadas, inspirada no modelo genérico de aplicações web:
+Camada de Apresentação (Interface do Usuário)
+O que é: O frontend da aplicação. É a camada com a qual o usuário interage diretamente.
+Responsabilidades: Renderizar as telas (perfil, feed finito, formulário de registro de atividade), capturar as entradas do usuário (dados de login, texto da atividade) e exibir as respostas do sistema.
+Tecnologias: JavaScript (possivelmente com um framework como React ou Vue.js).
+Camada de Aplicação (Lógica de Negócios)
+O que é: O "cérebro" do sistema, o backend (API).
+Responsabilidades: Receber as requisições da Camada de Apresentação, processar todas as regras de negócio e coordenar as outras camadas.
+Exemplos no projeto:
+Validar se um usuário pode fazer login.
+Processar o registro de uma nova atividade.
+Implementar a lógica que limita o feed.
+Aplicar o hash na senha do usuário antes de enviá-la para a próxima camada.
+O padrão MVC (Model-View-Controller) pode ser usado dentro desta camada para organizá-la internamente.
+Camada de Persistência (Acesso a Dados)
+O que é: A camada que "conversa" com o banco de dados.
+Responsabilidades: Traduzir as solicitações da Camada de Aplicação (ex: "buscar usuário por email") em comandos SQL específicos para o banco de dados. Ela abstrai a complexidade do banco.
+Tecnologias: Um ORM (Object-Relational Mapper) como o do Django, SQLAlchemy (Python) ou Prisma (Node.js).
+Camada de Banco de Dados
+O que é: O sistema de armazenamento físico e lógico.
+Responsabilidades: Armazenar, persistir e recuperar os dados de forma eficiente e segura (ex: tabelas Usuarios, Atividades, Incentivos).
+Tecnologia: Postgres.
+Especificação de requisitos do sistema
+Requisitos Funcionais do Sistema (RFS):
+RFU-01: O sistema deve implementar um sistema de conexão mútua (ex: “Aliados”).
+RFU-02: O sistema deve exibir um feed finito e personalizado, mostrando apenas os registros recentes dos “Aliados” do usuário.
+
+Requisitos Não-Funcionais do Sistema (RNFS):
+RNFU-01: Usabilidade - A interface de usuário (UI) deve ser minimalista, utilizar uma paleta de cores calmas (escalas de cinza ou tons pastéis) e ser livre de distrações visuais (ex: GIFs, pop-ups, publicidade).
+RNFU-02: O feed principal de atividades não deve possuir rolagem infinita. Deve ser limitado pelo registro das últimas 24h ou até 20 registros, visando desencorajar o uso passivo.
+RFNU-03: O tempo de resposta para a autenticação (login) do usuário não deve exceder 5 segundos.
+RNFU-04: O sistema deve ter uma disponibilidade mínima de 99% do tempo, excluindo janelas de manutenção planejadas.
+RNFU-05: Todas as senhas de usuários devem ser armazendas em um banco de dados utilizando um algoritmo de hash criptográfico robusto.
+
+Modelos do sistema
+
+
+Planejamento de desenvolvimento (Ágil, por planos, cascata)
+Metodologia de Desenvolvimento Otimizada (Base Ágil)
+1. Justificativa da Metodologia
+Foi escolhida uma abordagem Ágil, adaptada em Sprints (ciclos) curtos de uma semana. Esta escolha se justifica pelo curto prazo de desenvolvimento (3 semanas) e pela natureza do projeto (MVP). A metodologia ágil permite focar em entregas funcionais incrementais (Básico, Intermediário, Avançado) e adaptar o planejamento conforme a implementação avança, garantindo que o essencial (MVP Básico e Documentação) seja concluído primeiro.
+2. Estrutura do Planejamento (Sprints de 1 Semana)
+O projeto será dividido em 3 Sprints de uma semana, seguidos pela data de entrega. Cada Sprint tem objetivos claros que abrangem tanto a Parte...
