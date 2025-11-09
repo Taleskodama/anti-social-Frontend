@@ -52,12 +52,19 @@ function AppRouter() {
 }
 
 export default function App() {
-  const isAuthenticated = false;
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {isAuthenticated ? <AppRouter /> : <AuthRouter />}
+        <Switch>
+          <Route path="/" component={Login} />
+          <Route path="/login" component={Login} />
+          <Route path="/signup" component={Signup} />
+          <Route path="/forgot-password" component={ForgotPassword} />
+          <Route path="/feed" component={AppRouter} />
+          <Route path="/activity" component={AppRouter} />
+          <Route path="/profile" component={AppRouter} />
+          <Route component={NotFound} />
+        </Switch>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
