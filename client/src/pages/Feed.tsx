@@ -11,6 +11,8 @@ import avatar4 from "@assets/generated_images/Creative_user_avatar_3958f56e.png"
 export default function Feed() {
   const [createPostOpen, setCreatePostOpen] = useState(false);
 
+  const currentUser = { name: "Você", avatar: avatar1 };
+
   const mockPosts = [
     {
       id: "1",
@@ -71,7 +73,7 @@ export default function Feed() {
 
         <div className="space-y-6">
           {mockPosts.map((post) => (
-            <PostCard key={post.id} {...post} />
+            <PostCard key={post.id} {...post} currentUser={currentUser} />
           ))}
         </div>
 

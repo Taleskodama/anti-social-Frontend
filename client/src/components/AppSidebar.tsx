@@ -49,10 +49,11 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
 
   const handleLogout = () => {
     console.log("Logout clicked");
+    setLocation("/login");
   };
 
   return (

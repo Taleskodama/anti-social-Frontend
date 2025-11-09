@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import UserAvatar from "./UserAvatar";
+import CommentsSection from "./CommentsSection";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -21,6 +22,10 @@ interface PostCardProps {
   sharesCount?: number;
   isLiked?: boolean;
   isSaved?: boolean;
+  currentUser?: {
+    name: string;
+    avatar?: string;
+  };
   onLike?: (id: string) => void;
   onComment?: (id: string) => void;
   onSave?: (id: string) => void;
@@ -39,6 +44,7 @@ export default function PostCard({
   sharesCount = 0,
   isLiked = false,
   isSaved = false,
+  currentUser = { name: "Você", avatar: undefined },
   onLike,
   onComment,
   onSave,
@@ -47,6 +53,7 @@ export default function PostCard({
   const [liked, setLiked] = useState(isLiked);
   const [saved, setSaved] = useState(isSaved);
   const [likes, setLikes] = useState(likesCount);
+  const [showComments, setShowComments] = useState(false);
 
   const handleLike = () => {
     setLiked(!liked);
@@ -56,8 +63,9 @@ export default function PostCard({
   };
 
   const handleComment = () => {
+    setShowComments(!showComments);
     onComment?.(id);
-    console.log(`Comment on post ${id}`);
+    console.log(`Comment section ${showComments ? "closed" : "opened"} for post ${id}`);
   };
 
   const handleSave = () => {
@@ -154,6 +162,13 @@ export default function PostCard({
           <Bookmark className={`h-5 w-5 ${saved ? "fill-current" : ""}`} />
         </Button>
       </div>
+
+      {showComments && (
+        <CommentsSection
+          postId={id}
+          currentUser={currentUser}
+        />
+      )}
     </Card>
   );
 }
