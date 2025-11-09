@@ -1,4 +1,4 @@
-import { Home, Bell, User, LogOut } from "lucide-react";
+import { Home, Bell, User, MessageCircle, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,11 @@ const menuItems = [
     title: "Feed",
     url: "/feed",
     icon: Home,
+  },
+  {
+    title: "Mensagens",
+    url: "/messages",
+    icon: MessageCircle,
   },
   {
     title: "Atividade",

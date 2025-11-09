@@ -10,6 +10,8 @@ import Signup from "@/pages/Signup";
 import ForgotPassword from "@/pages/ForgotPassword";
 import Feed from "@/pages/Feed";
 import Activity from "@/pages/Activity";
+import Profile from "@/pages/Profile";
+import Messages from "@/pages/Messages";
 import NotFound from "@/pages/not-found";
 
 function AuthRouter() {
@@ -40,8 +42,9 @@ function AppRouter() {
           <main className="flex-1 overflow-auto">
             <Switch>
               <Route path="/feed" component={Feed} />
+              <Route path="/messages" component={Messages} />
               <Route path="/activity" component={Activity} />
-              <Route path="/profile" component={NotFound} />
+              <Route path="/profile" component={Profile} />
               <Route component={Feed} />
             </Switch>
           </main>
@@ -61,6 +64,7 @@ export default function App() {
           <Route path="/signup" component={Signup} />
           <Route path="/forgot-password" component={ForgotPassword} />
           <Route path="/feed" component={AppRouter} />
+          <Route path="/messages" component={AppRouter} />
           <Route path="/activity" component={AppRouter} />
           <Route path="/profile" component={AppRouter} />
           <Route component={NotFound} />
