@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { User, UserPlus, UserCheck, Edit } from "lucide-react";
+import { UserPlus, UserCheck, Edit } from "lucide-react";
+import EditProfileModal from "@/components/EditProfileModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,6 +14,7 @@ export default function Profile() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followersCount, setFollowersCount] = useState(234);
   const [followingCount] = useState(189);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
@@ -21,7 +23,7 @@ export default function Profile() {
   };
 
   const handleEdit = () => {
-    console.log("Edit profile clicked");
+    setEditModalOpen(true);
   };
 
   const mockPosts = [
@@ -176,6 +178,17 @@ export default function Profile() {
             ))}
           </TabsContent>
         </Tabs>
+
+        <EditProfileModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          currentUser={{
+            name: "Ana Silva",
+            username: "@anasilva",
+            bio: "Desenvolvedora full-stack apaixonada por criar experiências digitais significativas. Sempre aprendendo e compartilhando conhecimento. ✨",
+            avatar: avatar1,
+          }}
+        />
       </div>
     </div>
   );

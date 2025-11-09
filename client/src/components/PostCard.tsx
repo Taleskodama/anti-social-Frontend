@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import UserAvatar from "./UserAvatar";
@@ -18,9 +18,13 @@ interface PostCardProps {
   timestamp: Date;
   likesCount: number;
   commentsCount: number;
+  sharesCount?: number;
   isLiked?: boolean;
+  isSaved?: boolean;
   onLike?: (id: string) => void;
   onComment?: (id: string) => void;
+  onSave?: (id: string) => void;
+  onShare?: (id: string) => void;
 }
 
 export default function PostCard({
@@ -32,11 +36,16 @@ export default function PostCard({
   timestamp,
   likesCount,
   commentsCount,
+  sharesCount = 0,
   isLiked = false,
+  isSaved = false,
   onLike,
   onComment,
+  onSave,
+  onShare,
 }: PostCardProps) {
   const [liked, setLiked] = useState(isLiked);
+  const [saved, setSaved] = useState(isSaved);
   const [likes, setLikes] = useState(likesCount);
 
   const handleLike = () => {
@@ -49,6 +58,17 @@ export default function PostCard({
   const handleComment = () => {
     onComment?.(id);
     console.log(`Comment on post ${id}`);
+  };
+
+  const handleSave = () => {
+    setSaved(!saved);
+    onSave?.(id);
+    console.log(`Post ${id} ${saved ? "unsaved" : "saved"}`);
+  };
+
+  const handleShare = () => {
+    onShare?.(id);
+    console.log(`Post ${id} shared`);
   };
 
   return (
@@ -89,26 +109,49 @@ export default function PostCard({
         </div>
       )}
 
-      <div className="flex items-center gap-4 pt-2 border-t border-border">
+      <div className="flex items-center justify-between pt-2 border-t border-border">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLike}
+            className={`gap-2 ${liked ? "text-red-500" : ""}`}
+            data-testid={`button-like-${id}`}
+          >
+            <Heart className={`h-5 w-5 ${liked ? "fill-current" : ""}`} />
+            <span data-testid={`text-likes-${id}`}>{likes}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleComment}
+            className="gap-2"
+            data-testid={`button-comment-${id}`}
+          >
+            <MessageCircle className="h-5 w-5" />
+            <span data-testid={`text-comments-${id}`}>{commentsCount}</span>
+          </Button>
+          {sharesCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleShare}
+              className="gap-2"
+              data-testid={`button-share-${id}`}
+            >
+              <Share2 className="h-5 w-5" />
+              <span data-testid={`text-shares-${id}`}>{sharesCount}</span>
+            </Button>
+          )}
+        </div>
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleLike}
-          className={`gap-2 ${liked ? "text-red-500" : ""}`}
-          data-testid={`button-like-${id}`}
+          onClick={handleSave}
+          className={saved ? "text-primary" : ""}
+          data-testid={`button-save-${id}`}
         >
-          <Heart className={`h-5 w-5 ${liked ? "fill-current" : ""}`} />
-          <span data-testid={`text-likes-${id}`}>{likes}</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleComment}
-          className="gap-2"
-          data-testid={`button-comment-${id}`}
-        >
-          <MessageCircle className="h-5 w-5" />
-          <span data-testid={`text-comments-${id}`}>{commentsCount}</span>
+          <Bookmark className={`h-5 w-5 ${saved ? "fill-current" : ""}`} />
         </Button>
       </div>
     </Card>

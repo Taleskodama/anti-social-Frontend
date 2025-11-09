@@ -1,4 +1,4 @@
-import { Home, Bell, User, MessageCircle, LogOut } from "lucide-react";
+import { Home, Bell, User, MessageCircle, Search, TrendingUp, Bookmark, LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,16 @@ const menuItems = [
     icon: Home,
   },
   {
+    title: "Buscar",
+    url: "/search",
+    icon: Search,
+  },
+  {
+    title: "Tendências",
+    url: "/trending",
+    icon: TrendingUp,
+  },
+  {
     title: "Mensagens",
     url: "/messages",
     icon: MessageCircle,
@@ -25,6 +35,11 @@ const menuItems = [
     title: "Atividade",
     url: "/activity",
     icon: Bell,
+  },
+  {
+    title: "Salvos",
+    url: "/saved",
+    icon: Bookmark,
   },
   {
     title: "Perfil",
