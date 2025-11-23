@@ -1,16 +1,12 @@
-import { useState } from "react";
-import { Camera } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
 import UserAvatar from "./UserAvatar";
+import api from "../services/api";
 
 interface EditProfileModalProps {
   open: boolean;
@@ -21,64 +17,71 @@ interface EditProfileModalProps {
     bio?: string;
     avatar?: string;
   };
-  onSave?: (data: { name: string; username: string; bio: string; avatar?: string }) => void;
+  onSuccess?: () => void;
 }
 
 export default function EditProfileModal({
   open,
   onOpenChange,
   currentUser,
-  onSave,
+  onSuccess,
 }: EditProfileModalProps) {
   const [name, setName] = useState(currentUser.name);
-  const [username, setUsername] = useState(currentUser.username);
   const [bio, setBio] = useState(currentUser.bio || "");
-  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(currentUser.avatar);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setName(currentUser.name);
+      setBio(currentUser.bio || "");
+      setErrorMessage("");
     }
-  };
+  }, [open, currentUser]);
 
-  const handleSave = () => {
-    onSave?.({ name, username, bio, avatar: avatarPreview });
-    console.log("Profile updated:", { name, username, bio });
-    onOpenChange(false);
+  const handleSave = async () => {
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const userId = localStorage.getItem("user_id");
+
+      await api.put(`/users/${userId}`, {
+        name,
+        bio,
+      });
+
+      console.log("Perfil atualizado!");
+      localStorage.setItem("user_name", name);
+
+      onOpenChange(false);
+      if (onSuccess) onSuccess();
+    } catch (error: any) {
+      console.error("Erro ao salvar:", error);
+
+      if (error.response?.data?.errors?.[0]?.mensagem) {
+        setErrorMessage(error.response.data.errors[0].mensagem);
+      } else if (error.response?.data?.message) {
+        setErrorMessage(error.response.data.message);
+      } else {
+        setErrorMessage("Erro ao salvar. Verifique sua conexão.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" data-testid="modal-edit-profile">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Editar Perfil</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <UserAvatar src={avatarPreview} name={name} size="lg" />
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-                id="avatar-upload"
-              />
-              <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 h-8 w-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover-elevate"
-                data-testid="button-change-avatar"
-              >
-                <Camera className="h-4 w-4 text-primary-foreground" />
-              </label>
-            </div>
-            <p className="text-sm text-muted-foreground">Clique para alterar a foto</p>
+            <UserAvatar src={currentUser.avatar} name={name} size="lg" />
           </div>
 
           <div className="space-y-4">
@@ -89,19 +92,12 @@ export default function EditProfileModal({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Seu nome completo"
-                data-testid="input-name"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="username">Nome de usuário</Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="@seuusuario"
-                data-testid="input-username"
-              />
+            <div className="space-y-2 opacity-50 cursor-not-allowed">
+              <Label>Usuário (Gerado pelo email)</Label>
+              <Input value={currentUser.username} disabled />
             </div>
 
             <div className="space-y-2">
@@ -110,27 +106,33 @@ export default function EditProfileModal({
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Conte um pouco sobre você..."
+                placeholder="Conte sobre você..."
                 className="resize-none"
                 rows={4}
-                data-testid="input-bio"
               />
-              <p className="text-xs text-muted-foreground">
-                {bio.length}/160 caracteres
-              </p>
+              <p className="text-xs text-muted-foreground">{bio.length}/160</p>
             </div>
           </div>
+
+          {errorMessage && (
+            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm text-center">
+              ⚠️ {errorMessage}
+            </div>
+          )}
 
           <div className="flex gap-3 justify-end">
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              data-testid="button-cancel"
+              disabled={isLoading}
             >
               Cancelar
             </Button>
-            <Button onClick={handleSave} data-testid="button-save">
-              Salvar Alterações
+            <Button onClick={handleSave} disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Salvar
             </Button>
           </div>
         </div>

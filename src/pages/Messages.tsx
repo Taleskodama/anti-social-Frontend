@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Send, Search } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import UserAvatar from "@/components/UserAvatar";
+import { Card } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { ScrollArea } from "../components/ui/scroll-area";
+import UserAvatar from "../components/UserAvatar";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import avatar1 from "@assets/generated_images/Male_user_avatar_e6e3dcfc.png";
@@ -75,7 +75,8 @@ export default function Messages() {
   };
 
   const currentChat = mockConversations.find((c) => c.id === selectedChat);
-  const messages = mockMessages[selectedChat as keyof typeof mockMessages] || [];
+  const messages =
+    mockMessages[selectedChat as keyof typeof mockMessages] || [];
 
   return (
     <div className="h-screen">
@@ -83,7 +84,9 @@ export default function Messages() {
         <div className="h-full grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="md:col-span-1 p-4 space-y-4">
             <div>
-              <h2 className="text-2xl font-bold text-foreground mb-4">Mensagens</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-4">
+                Mensagens
+              </h2>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -106,7 +109,11 @@ export default function Messages() {
                     data-testid={`card-conversation-${conversation.id}`}
                   >
                     <div className="flex gap-3">
-                      <UserAvatar src={conversation.user.avatar} name={conversation.user.name} size="sm" />
+                      <UserAvatar
+                        src={conversation.user.avatar}
+                        name={conversation.user.name}
+                        size="sm"
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <div className="font-semibold text-foreground truncate">
@@ -125,7 +132,10 @@ export default function Messages() {
                           {conversation.lastMessage}
                         </div>
                         <div className="text-xs text-muted-foreground font-mono mt-1">
-                          {formatDistanceToNow(conversation.timestamp, { addSuffix: true, locale: ptBR })}
+                          {formatDistanceToNow(conversation.timestamp, {
+                            addSuffix: true,
+                            locale: ptBR,
+                          })}
                         </div>
                       </div>
                     </div>
@@ -139,9 +149,16 @@ export default function Messages() {
             {currentChat && (
               <>
                 <div className="p-4 border-b border-border flex items-center gap-3">
-                  <UserAvatar src={currentChat.user.avatar} name={currentChat.user.name} size="sm" />
+                  <UserAvatar
+                    src={currentChat.user.avatar}
+                    name={currentChat.user.name}
+                    size="sm"
+                  />
                   <div>
-                    <div className="font-semibold text-foreground" data-testid="text-current-chat-name">
+                    <div
+                      className="font-semibold text-foreground"
+                      data-testid="text-current-chat-name"
+                    >
                       {currentChat.user.name}
                     </div>
                     <div className="text-xs text-muted-foreground">Online</div>
@@ -153,7 +170,9 @@ export default function Messages() {
                     {messages.map((message) => (
                       <div
                         key={message.id}
-                        className={`flex ${message.isMine ? "justify-end" : "justify-start"}`}
+                        className={`flex ${
+                          message.isMine ? "justify-end" : "justify-start"
+                        }`}
                         data-testid={`message-${message.id}`}
                       >
                         <div
@@ -165,7 +184,10 @@ export default function Messages() {
                         >
                           <div className="text-sm">{message.text}</div>
                           <div className="text-xs opacity-70 mt-1 font-mono">
-                            {formatDistanceToNow(message.timestamp, { addSuffix: true, locale: ptBR })}
+                            {formatDistanceToNow(message.timestamp, {
+                              addSuffix: true,
+                              locale: ptBR,
+                            })}
                           </div>
                         </div>
                       </div>
@@ -173,7 +195,10 @@ export default function Messages() {
                   </div>
                 </ScrollArea>
 
-                <form onSubmit={handleSendMessage} className="p-4 border-t border-border">
+                <form
+                  onSubmit={handleSendMessage}
+                  className="p-4 border-t border-border"
+                >
                   <div className="flex gap-2">
                     <Input
                       placeholder="Digite sua mensagem..."
@@ -182,7 +207,11 @@ export default function Messages() {
                       className="flex-1"
                       data-testid="input-new-message"
                     />
-                    <Button type="submit" size="icon" data-testid="button-send-message">
+                    <Button
+                      type="submit"
+                      size="icon"
+                      data-testid="button-send-message"
+                    >
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>

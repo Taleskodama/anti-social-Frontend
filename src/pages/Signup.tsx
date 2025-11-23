@@ -1,29 +1,53 @@
 import { useState } from "react";
 import { UserPlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Link } from "wouter";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { Link, useLocation } from "wouter"; // ADICIONADO useLocation
 import { SiGoogle } from "react-icons/si";
+import api from "../services/api"; // IMPORTANTE: Importar a API
 
 export default function Signup() {
+  const [, setLocation] = useLocation(); // Hook de navegação
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSignup = (e: React.FormEvent) => {
+  // Estado de erro
+  const [error, setError] = useState("");
+
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     if (password !== confirmPassword) {
-      console.log("Passwords don't match");
+      setError("As senhas não coincidem.");
       return;
     }
-    console.log("Signup:", { name, email, password });
+
+    try {
+      // Chama a rota de registro do Backend
+      // O backend espera: name, email, password
+      await api.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      alert("Conta criada com sucesso! Faça login.");
+
+      // Redireciona para o login
+      setLocation("/login");
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao criar conta. Verifique os dados ou tente outro email.");
+    }
   };
 
   const handleGoogleSignup = () => {
-    console.log("Google signup clicked");
+    console.log("Google signup clicked - (Não implementado no MVP)");
   };
 
   return (
@@ -57,7 +81,9 @@ export default function Signup() {
               <span className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">OU CONTINUE COM</span>
+              <span className="bg-card px-2 text-muted-foreground">
+                OU CONTINUE COM
+              </span>
             </div>
           </div>
 
@@ -118,7 +144,18 @@ export default function Signup() {
               />
             </div>
 
-            <Button type="submit" className="w-full h-12" data-testid="button-signup">
+            {/* EXIBIR ERRO SE HOUVER */}
+            {error && (
+              <p className="text-red-500 text-sm text-center font-medium">
+                {error}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-12"
+              data-testid="button-signup"
+            >
               Criar conta
             </Button>
           </form>
@@ -126,7 +163,10 @@ export default function Signup() {
           <div className="text-center text-sm text-muted-foreground">
             Já tem uma conta?{" "}
             <Link href="/login">
-              <a className="text-primary hover:underline font-semibold" data-testid="link-login">
+              <a
+                className="text-primary hover:underline font-semibold"
+                data-testid="link-login"
+              >
                 Entrar
               </a>
             </Link>

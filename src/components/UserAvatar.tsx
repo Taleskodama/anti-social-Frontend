@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface UserAvatarProps {
   src?: string;
@@ -7,7 +7,12 @@ interface UserAvatarProps {
   size?: "sm" | "md" | "lg";
 }
 
-export default function UserAvatar({ src, alt, name, size = "md" }: UserAvatarProps) {
+export default function UserAvatar({
+  src,
+  alt,
+  name,
+  size = "md",
+}: UserAvatarProps) {
   const getInitials = (name?: string) => {
     if (!name) return "U";
     return name

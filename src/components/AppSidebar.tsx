@@ -1,4 +1,13 @@
-import { Home, Bell, User, MessageCircle, Search, TrendingUp, Bookmark, LogOut } from "lucide-react";
+import {
+  Home,
+  Bell,
+  User,
+  MessageCircle,
+  Search,
+  TrendingUp,
+  Bookmark,
+  LogOut,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -7,7 +16,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from "./ui/sidebar";
+
 import { useLocation } from "wouter";
 
 const menuItems = [
@@ -52,7 +62,12 @@ export function AppSidebar() {
   const [location, setLocation] = useLocation();
 
   const handleLogout = () => {
-    console.log("Logout clicked");
+    localStorage.removeItem("token");
+    localStorage.removeItem("user_id");
+    localStorage.removeItem("user_name");
+
+    console.log("Logout realizado - Token removido");
+
     setLocation("/login");
   };
 
@@ -61,7 +76,9 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <div className="px-4 py-6">
-            <h2 className="text-xl font-bold text-foreground">The Anti-Social</h2>
+            <h2 className="text-xl font-bold text-foreground">
+              The Anti-Social
+            </h2>
           </div>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -80,7 +97,10 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleLogout} data-testid="nav-logout">
+                <SidebarMenuButton
+                  onClick={handleLogout}
+                  data-testid="nav-logout"
+                >
                   <LogOut />
                   <span>Sair</span>
                 </SidebarMenuButton>

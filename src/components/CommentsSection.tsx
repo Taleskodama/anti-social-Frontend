@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "./ui/button";
+import { Textarea } from "./ui/textarea";
+import { ScrollArea } from "./ui/scroll-area";
 import UserAvatar from "./UserAvatar";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import api from "../services/api";
 
 interface Comment {
   id: string;
@@ -14,63 +15,98 @@ interface Comment {
     avatar?: string;
   };
   content: string;
-  timestamp: Date;
+  creationDate: string;
 }
 
 interface CommentsSectionProps {
   postId: string;
-  comments?: Comment[];
   currentUser: {
     name: string;
     avatar?: string;
   };
-  onAddComment?: (postId: string, content: string) => void;
 }
 
 export default function CommentsSection({
   postId,
-  comments = [],
   currentUser,
-  onAddComment,
 }: CommentsSectionProps) {
   const [newComment, setNewComment] = useState("");
-  const [localComments, setLocalComments] = useState<Comment[]>(comments);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadComments();
+  }, [postId]);
+
+  async function loadComments() {
+    try {
+      const response = await api.get(`/comments/activity/${postId}`);
+      setComments(response.data);
+    } catch (error) {
+      console.error("Erro ao carregar comentários", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim()) {
-      const comment: Comment = {
-        id: `comment-${Date.now()}`,
-        author: currentUser,
+    if (!newComment.trim()) return;
+
+    try {
+      await api.post("/comments", {
+        activityId: postId,
         content: newComment,
-        timestamp: new Date(),
-      };
-      setLocalComments([...localComments, comment]);
-      onAddComment?.(postId, newComment);
-      console.log("Comment added:", { postId, content: newComment });
+      });
+
       setNewComment("");
+      loadComments();
+    } catch (error) {
+      console.error("Erro ao enviar comentário:", error);
     }
   };
 
   return (
     <div className="space-y-4 pt-4 border-t border-border mt-4">
       <h4 className="font-semibold text-foreground">
-        Comentários ({localComments.length})
+        Comentários ({comments.length})
       </h4>
 
-      {localComments.length > 0 && (
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Carregando...</p>
+      ) : comments.length > 0 ? (
         <ScrollArea className="max-h-80">
           <div className="space-y-4 pr-4">
-            {localComments.map((comment) => (
-              <div key={comment.id} className="flex gap-3" data-testid={`comment-${comment.id}`}>
-                <UserAvatar src={comment.author.avatar} name={comment.author.name} size="sm" />
+            {comments.map((comment) => (
+              <div
+                key={comment.id}
+                className="flex gap-3"
+                data-testid={`comment-${comment.id}`}
+              >
+                <UserAvatar
+                  src={undefined}
+                  name={comment.author?.name || "Usuário"}
+                  size="sm"
+                />
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm text-foreground">
-                      {comment.author.name}
+                      {comment.author?.name || "Usuário"}
                     </span>
                     <span className="text-xs text-muted-foreground font-mono">
-                      {formatDistanceToNow(comment.timestamp, { addSuffix: true, locale: ptBR })}
+                      {(() => {
+                        const dbDate = new Date(
+                          comment.creationDate || Date.now()
+                        );
+                        const realDate = new Date(
+                          dbDate.getTime() - 3 * 60 * 60 * 1000
+                        );
+
+                        return formatDistanceToNow(realDate, {
+                          addSuffix: true,
+                          locale: ptBR,
+                        });
+                      })()}
                     </span>
                   </div>
                   <p className="text-sm text-foreground">{comment.content}</p>
@@ -79,10 +115,18 @@ export default function CommentsSection({
             ))}
           </div>
         </ScrollArea>
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          Seja o primeiro a comentar!
+        </p>
       )}
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <UserAvatar src={currentUser.avatar} name={currentUser.name} size="sm" />
+        <UserAvatar
+          src={currentUser.avatar}
+          name={currentUser.name}
+          size="sm"
+        />
         <div className="flex-1 flex gap-2">
           <Textarea
             placeholder="Escreva um comentário..."

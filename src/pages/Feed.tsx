@@ -1,55 +1,86 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import PostCard from "@/components/PostCard";
-import CreatePostModal from "@/components/CreatePostModal";
-import avatar1 from "@assets/generated_images/Female_user_avatar_94d67f98.png";
-import avatar2 from "@assets/generated_images/Male_user_avatar_e6e3dcfc.png";
-import avatar3 from "@assets/generated_images/User_avatar_with_glasses_65176678.png";
-import avatar4 from "@assets/generated_images/Creative_user_avatar_3958f56e.png";
+import api from "../services/api";
+import CreatePostModal from "../components/CreatePostModal";
+import PostCard from "../components/PostCard";
+import { Button } from "../components/ui/button";
+
+const avatar1 = undefined;
 
 export default function Feed() {
   const [createPostOpen, setCreatePostOpen] = useState(false);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const currentUser = { name: "Você", avatar: avatar1 };
+  const userName = localStorage.getItem("user_name") || "Você";
+  const currentUserId = localStorage.getItem("user_id");
 
-  const mockPosts = [
-    {
-      id: "1",
-      author: { name: "Ana Silva", avatar: avatar1 },
-      content: "Acabei de terminar um projeto incrível! A sensação de ver tudo funcionando é incomparável. Agradeço a todos que me ajudaram nessa jornada. 🚀✨",
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      likesCount: 24,
-      commentsCount: 5,
-    },
-    {
-      id: "2",
-      author: { name: "Carlos Mendes", avatar: avatar2 },
-      content: "Bom dia! Alguém tem dicas de recursos para aprender TypeScript? Estou começando agora e quero me aprofundar.",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      likesCount: 12,
-      commentsCount: 8,
-      isLiked: true,
-    },
-    {
-      id: "3",
-      author: { name: "Marina Costa", avatar: avatar3 },
-      content: "Reflexão do dia: Às vezes, precisamos desacelerar para enxergar melhor o caminho à frente. 🌱",
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4),
-      likesCount: 45,
-      commentsCount: 12,
-    },
-    {
-      id: "4",
-      author: { name: "Rafael Santos", avatar: avatar4 },
-      content: "Compartilhando um pouco do meu processo criativo. É sempre bom documentar a jornada!",
-      mediaUrl: avatar4,
-      mediaType: "image" as const,
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6),
-      likesCount: 67,
-      commentsCount: 15,
-    },
-  ];
+  const currentUser = { name: userName, avatar: avatar1 };
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  async function loadPosts() {
+    try {
+      const response = await api.get("/activities");
+
+      const postsFormatados = response.data.map((post: any) => {
+        let dataPost = new Date();
+        const dataVindaDoBanco = post.creationDate || post.created_at;
+
+        if (dataVindaDoBanco) {
+          const dbDate = new Date(dataVindaDoBanco);
+          if (!isNaN(dbDate.getTime())) {
+            dataPost = new Date(dbDate.getTime() - 3 * 60 * 60 * 1000);
+          }
+        }
+
+        const incentives = post.incentives || [];
+        const isLikedByMe = incentives.some(
+          (inc: any) =>
+            inc.authorId === currentUserId || inc.author?.id === currentUserId
+        );
+
+        return {
+          id: post.id,
+          author: {
+            name: post.author?.name || "Usuário",
+            avatar: avatar1,
+          },
+          content: post.description || post.title,
+          mediaUrl: post.mediaUrl || undefined,
+          mediaType: "image",
+          timestamp: dataPost,
+          likesCount: incentives.length,
+          isLiked: isLikedByMe,
+
+          commentsCount: post.comments ? post.comments.length : 0,
+        };
+      });
+
+      setPosts(
+        postsFormatados.sort((a: any, b: any) => b.timestamp - a.timestamp)
+      );
+    } catch (error) {
+      console.error("Erro ao carregar posts", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleLike(postId: string) {
+    try {
+      await api.post("/incentives", {
+        activityId: postId,
+        type: "HEART",
+      });
+
+      loadPosts();
+    } catch (error) {
+      console.error("Erro ao curtir:", error);
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -72,20 +103,37 @@ export default function Feed() {
         </div>
 
         <div className="space-y-6">
-          {mockPosts.map((post) => (
-            <PostCard key={post.id} {...post} currentUser={currentUser} />
-          ))}
+          {loading ? (
+            <p className="text-center text-muted-foreground">Carregando...</p>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-10 border rounded-lg bg-card">
+              <p className="text-muted-foreground">Nenhum post encontrado.</p>
+              <p className="text-sm text-muted-foreground">
+                Seja o primeiro a postar!
+              </p>
+            </div>
+          ) : (
+            posts.map((post) => (
+              <PostCard
+                key={post.id}
+                {...post}
+                currentUser={currentUser}
+                onLike={handleLike}
+              />
+            ))
+          )}
         </div>
 
         <div className="text-center py-8 text-sm text-muted-foreground">
-          Você viu todas as publicações recentes (últimas 24h)
+          Você viu todas as publicações recentes.
         </div>
       </div>
 
       <CreatePostModal
         open={createPostOpen}
         onOpenChange={setCreatePostOpen}
-        currentUser={{ name: "Você", avatar: avatar1 }}
+        currentUser={currentUser}
+        onSuccess={loadPosts}
       />
     </div>
   );

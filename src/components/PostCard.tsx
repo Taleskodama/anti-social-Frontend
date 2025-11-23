@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
 import UserAvatar from "./UserAvatar";
 import CommentsSection from "./CommentsSection";
 import { formatDistanceToNow } from "date-fns";
@@ -14,7 +14,7 @@ interface PostCardProps {
     avatar?: string;
   };
   content: string;
-  mediaUrl?: string;
+  mediaUrl?: string; // Pode vir string ou undefined
   mediaType?: "image" | "video";
   timestamp: Date;
   likesCount: number;
@@ -37,7 +37,7 @@ export default function PostCard({
   author,
   content,
   mediaUrl,
-  mediaType,
+  mediaType = "image", // Padrão é imagem
   timestamp,
   likesCount,
   commentsCount,
@@ -55,28 +55,29 @@ export default function PostCard({
   const [likes, setLikes] = useState(likesCount);
   const [showComments, setShowComments] = useState(false);
 
+  // Garante que a data seja válida para evitar erro do date-fns
+  const safeDate = isNaN(new Date(timestamp).getTime())
+    ? new Date()
+    : new Date(timestamp);
+
   const handleLike = () => {
     setLiked(!liked);
     setLikes(liked ? likes - 1 : likes + 1);
     onLike?.(id);
-    console.log(`Post ${id} ${liked ? "unliked" : "liked"}`);
   };
 
   const handleComment = () => {
     setShowComments(!showComments);
     onComment?.(id);
-    console.log(`Comment section ${showComments ? "closed" : "opened"} for post ${id}`);
   };
 
   const handleSave = () => {
     setSaved(!saved);
     onSave?.(id);
-    console.log(`Post ${id} ${saved ? "unsaved" : "saved"}`);
   };
 
   const handleShare = () => {
     onShare?.(id);
-    console.log(`Post ${id} shared`);
   };
 
   return (
@@ -84,34 +85,44 @@ export default function PostCard({
       <div className="flex gap-3 mb-4">
         <UserAvatar src={author.avatar} name={author.name} />
         <div className="flex-1">
-          <div className="font-semibold text-foreground" data-testid={`text-author-${id}`}>
+          <div
+            className="font-semibold text-foreground"
+            data-testid={`text-author-${id}`}
+          >
             {author.name}
           </div>
-          <div className="text-xs text-muted-foreground font-mono" data-testid={`text-timestamp-${id}`}>
-            {formatDistanceToNow(timestamp, { addSuffix: true, locale: ptBR })}
+          <div
+            className="text-xs text-muted-foreground font-mono"
+            data-testid={`text-timestamp-${id}`}
+          >
+            {formatDistanceToNow(safeDate, { addSuffix: true, locale: ptBR })}
           </div>
         </div>
       </div>
 
-      <div className="text-foreground mb-4 whitespace-pre-wrap" data-testid={`text-content-${id}`}>
+      <div
+        className="text-foreground mb-4 whitespace-pre-wrap"
+        data-testid={`text-content-${id}`}
+      >
         {content}
       </div>
 
+      {/* SE TIVER URL DE MÍDIA, EXIBE AQUI */}
       {mediaUrl && (
         <div className="mb-4 rounded-lg overflow-hidden max-h-[500px]">
-          {mediaType === "image" ? (
-            <img
-              src={mediaUrl}
-              alt="Post media"
-              className="w-full h-full object-cover"
-              data-testid={`img-media-${id}`}
-            />
-          ) : (
+          {mediaType === "video" ? (
             <video
               src={mediaUrl}
               controls
               className="w-full h-full object-cover"
               data-testid={`video-media-${id}`}
+            />
+          ) : (
+            <img
+              src={mediaUrl}
+              alt="Post media"
+              className="w-full h-full object-cover"
+              data-testid={`img-media-${id}`}
             />
           )}
         </div>
@@ -164,10 +175,7 @@ export default function PostCard({
       </div>
 
       {showComments && (
-        <CommentsSection
-          postId={id}
-          currentUser={currentUser}
-        />
+        <CommentsSection postId={id} currentUser={currentUser} />
       )}
     </Card>
   );

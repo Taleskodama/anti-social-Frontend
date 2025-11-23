@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { KeyRound } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Link } from "wouter";
 
 export default function ForgotPassword() {
@@ -24,7 +24,9 @@ export default function ForgotPassword() {
             <KeyRound className="h-8 w-8 text-primary-foreground" />
           </div>
           <div className="space-y-2 text-center">
-            <h1 className="text-3xl font-bold text-foreground">Esqueci a senha</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Esqueci a senha
+            </h1>
             <p className="text-muted-foreground">
               {submitted
                 ? "Verifique seu email para redefinir sua senha"
@@ -51,7 +53,11 @@ export default function ForgotPassword() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full h-12" data-testid="button-submit">
+                <Button
+                  type="submit"
+                  className="w-full h-12"
+                  data-testid="button-submit"
+                >
                   Enviar instruções
                 </Button>
               </form>
@@ -59,7 +65,10 @@ export default function ForgotPassword() {
               <div className="text-center text-sm text-muted-foreground">
                 Lembrou sua senha?{" "}
                 <Link href="/login">
-                  <a className="text-primary hover:underline font-semibold" data-testid="link-login">
+                  <a
+                    className="text-primary hover:underline font-semibold"
+                    data-testid="link-login"
+                  >
                     Voltar ao login
                   </a>
                 </Link>
@@ -69,13 +78,17 @@ export default function ForgotPassword() {
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
                 <p className="text-sm text-foreground">
-                  Enviamos um email para <strong>{email}</strong> com instruções para
-                  redefinir sua senha.
+                  Enviamos um email para <strong>{email}</strong> com instruções
+                  para redefinir sua senha.
                 </p>
               </div>
 
               <Link href="/login">
-                <Button variant="outline" className="w-full h-12" data-testid="button-back-login">
+                <Button
+                  variant="outline"
+                  className="w-full h-12"
+                  data-testid="button-back-login"
+                >
                   Voltar ao login
                 </Button>
               </Link>

@@ -1,14 +1,10 @@
 import { useState } from "react";
-import { X, Image as ImageIcon, Video } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { X, Image as ImageIcon, Video, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Textarea } from "./ui/textarea";
 import UserAvatar from "./UserAvatar";
+import api from "../services/api";
+import { Button } from "./ui/button";
 
 interface CreatePostModalProps {
   open: boolean;
@@ -17,16 +13,18 @@ interface CreatePostModalProps {
     name: string;
     avatar?: string;
   };
-  onPost?: (content: string, media?: File) => void;
+  onSuccess?: () => void;
 }
 
 export default function CreatePostModal({
   open,
   onOpenChange,
   currentUser,
-  onPost,
+  onSuccess,
 }: CreatePostModalProps) {
   const [content, setContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
 
@@ -35,27 +33,40 @@ export default function CreatePostModal({
     if (file) {
       setMediaFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setMediaPreview(reader.result as string);
-      };
+      reader.onloadend = () => setMediaPreview(reader.result as string);
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handlePost = () => {
-    if (content.trim()) {
-      onPost?.(content, mediaFile || undefined);
-      console.log("Post created:", { content, hasMedia: !!mediaFile });
-      setContent("");
-      setMediaPreview(null);
-      setMediaFile(null);
-      onOpenChange(false);
     }
   };
 
   const handleRemoveMedia = () => {
     setMediaPreview(null);
     setMediaFile(null);
+  };
+
+  const handlePost = async () => {
+    if (!content.trim()) return;
+
+    setIsLoading(true);
+    try {
+      await api.post("/activities", {
+        title: "Publicação",
+        description: content,
+        mediaUrl: mediaPreview || undefined,
+      });
+
+      console.log("Post criado com sucesso!");
+
+      setContent("");
+      handleRemoveMedia();
+      onOpenChange(false);
+
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error("Erro ao criar post:", error);
+      alert("Erro ao publicar. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -68,7 +79,9 @@ export default function CreatePostModal({
         <div className="space-y-4">
           <div className="flex gap-3">
             <UserAvatar src={currentUser.avatar} name={currentUser.name} />
-            <div className="font-semibold text-foreground">{currentUser.name}</div>
+            <div className="font-semibold text-foreground">
+              {currentUser.name}
+            </div>
           </div>
 
           <Textarea
@@ -77,6 +90,7 @@ export default function CreatePostModal({
             onChange={(e) => setContent(e.target.value)}
             className="min-h-32 resize-none text-base"
             data-testid="input-post-content"
+            disabled={isLoading}
           />
 
           {mediaPreview && (
@@ -85,14 +99,12 @@ export default function CreatePostModal({
                 src={mediaPreview}
                 alt="Preview"
                 className="w-full max-h-96 object-cover"
-                data-testid="img-media-preview"
               />
               <Button
                 variant="destructive"
                 size="icon"
                 className="absolute top-2 right-2"
                 onClick={handleRemoveMedia}
-                data-testid="button-remove-media"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -115,26 +127,9 @@ export default function CreatePostModal({
                   className="gap-2"
                   type="button"
                   asChild
-                  data-testid="button-add-image"
                 >
                   <span className="cursor-pointer">
-                    <ImageIcon className="h-5 w-5" />
-                    Imagem
-                  </span>
-                </Button>
-              </label>
-              <label htmlFor="media-upload">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2"
-                  type="button"
-                  asChild
-                  data-testid="button-add-video"
-                >
-                  <span className="cursor-pointer">
-                    <Video className="h-5 w-5" />
-                    Vídeo
+                    <ImageIcon className="h-5 w-5" /> Imagem
                   </span>
                 </Button>
               </label>
@@ -142,10 +137,17 @@ export default function CreatePostModal({
 
             <Button
               onClick={handlePost}
-              disabled={!content.trim()}
+              disabled={!content.trim() || isLoading}
               data-testid="button-post"
             >
-              Publicar
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />{" "}
+                  Publicando...
+                </>
+              ) : (
+                "Publicar"
+              )}
             </Button>
           </div>
         </div>

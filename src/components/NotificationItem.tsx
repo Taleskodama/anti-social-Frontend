@@ -1,6 +1,6 @@
 import { Heart, MessageCircle, UserPlus } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card } from "./ui/card";
+import { Button } from "./ui/button";
 import UserAvatar from "./UserAvatar";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -63,28 +63,42 @@ export default function NotificationItem({
 
   return (
     <Card
-      className={`p-4 hover-elevate ${!isRead ? "border-l-4 border-l-primary" : ""}`}
+      className={`p-4 hover-elevate ${
+        !isRead ? "border-l-4 border-l-primary" : ""
+      }`}
       data-testid={`card-notification-${id}`}
     >
       <div className="flex gap-3">
         {!isRead && (
-          <div className="w-2 h-2 rounded-full bg-primary mt-2" data-testid="indicator-unread" />
+          <div
+            className="w-2 h-2 rounded-full bg-primary mt-2"
+            data-testid="indicator-unread"
+          />
         )}
         <div className="flex-shrink-0">{getIcon()}</div>
         <UserAvatar src={user.avatar} name={user.name} size="sm" />
         <div className="flex-1">
           <div className="text-sm">
-            <span className="font-semibold text-foreground" data-testid={`text-username-${id}`}>
+            <span
+              className="font-semibold text-foreground"
+              data-testid={`text-username-${id}`}
+            >
               {user.name}
             </span>{" "}
             <span className="text-muted-foreground">{getMessage()}</span>
           </div>
           {content && (
-            <div className="text-sm text-muted-foreground mt-1" data-testid={`text-content-${id}`}>
+            <div
+              className="text-sm text-muted-foreground mt-1"
+              data-testid={`text-content-${id}`}
+            >
               "{content}"
             </div>
           )}
-          <div className="text-xs text-muted-foreground font-mono mt-1" data-testid={`text-timestamp-${id}`}>
+          <div
+            className="text-xs text-muted-foreground font-mono mt-1"
+            data-testid={`text-timestamp-${id}`}
+          >
             {formatDistanceToNow(timestamp, { addSuffix: true, locale: ptBR })}
           </div>
           {type === "follow" && (
