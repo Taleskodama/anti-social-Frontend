@@ -136,6 +136,7 @@ export default function Feed() {
                 initialIsFollowing={
                   post.author.id && followingIds.includes(post.author.id)
                 }
+                onDelete={loadPosts}
               />
             ))
           )}

@@ -19,7 +19,6 @@ import Messages from "./pages/Messages";
 import Saved from "./pages/Saved";
 import NotFound from "./pages/not-found";
 
-// Componente que gerencia o Layout com Sidebar (Área Logada)
 function AppRouter() {
   const style = {
     "--sidebar-width": "16rem",
@@ -42,7 +41,6 @@ function AppRouter() {
               <Route path="/activity" component={Activity} />
               <Route path="/saved" component={Saved} />
               <Route path="/profile" component={Profile} />
-              {/* Se não achar rota específica dentro da área logada, volta pro feed ou 404 */}
               <Route component={Feed} />
             </Switch>
           </main>
@@ -52,21 +50,17 @@ function AppRouter() {
   );
 }
 
-// Componente Principal com Lógica de Proteção
 function RouterContent() {
   const [location, setLocation] = useLocation();
 
-  // Lógica de Segurança: Roda toda vez que a rota muda
   useEffect(() => {
     const token = localStorage.getItem("token");
     const publicPaths = ["/", "/login", "/signup", "/forgot-password"];
 
-    // 1. Se NÃO tem token e tenta acessar área privada -> Manda pro Login
     if (!token && !publicPaths.includes(location)) {
       setLocation("/login");
     }
 
-    // 2. Se TEM token e tenta acessar Login/Signup -> Manda pro Feed
     if (token && publicPaths.includes(location)) {
       setLocation("/feed");
     }
@@ -74,13 +68,11 @@ function RouterContent() {
 
   return (
     <Switch>
-      {/* Rotas Públicas */}
       <Route path="/" component={Login} />
       <Route path="/login" component={Login} />
       <Route path="/signup" component={Signup} />
       <Route path="/forgot-password" component={ForgotPassword} />
 
-      {/* Rotas Protegidas (Todas usam o layout AppRouter) */}
       <Route path="/feed" component={AppRouter} />
       <Route path="/search" component={AppRouter} />
       <Route path="/trending" component={AppRouter} />
@@ -89,7 +81,6 @@ function RouterContent() {
       <Route path="/saved" component={AppRouter} />
       <Route path="/profile" component={AppRouter} />
 
-      {/* Rota 404 */}
       <Route component={NotFound} />
     </Switch>
   );
@@ -99,7 +90,6 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        {/* Movemos o Switch para dentro do RouterContent para usar os hooks */}
         <RouterContent />
         <Toaster />
       </TooltipProvider>

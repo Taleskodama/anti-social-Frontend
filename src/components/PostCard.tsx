@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Heart, MessageCircle, Bookmark, Share2, Check } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Bookmark,
+  Share2,
+  Check,
+  Trash,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 import UserAvatar from "./UserAvatar";
@@ -33,6 +40,7 @@ interface PostCardProps {
   onComment?: (id: string) => void;
   onSave?: (id: string) => void;
   onShare?: (id: string) => void;
+  onDelete?: () => void; // Função para recarregar o feed ao deletar
 }
 
 export default function PostCard({
@@ -53,14 +61,19 @@ export default function PostCard({
   onComment,
   onSave,
   onShare,
+  onDelete,
 }: PostCardProps) {
   const [liked, setLiked] = useState(isLiked);
   const [saved, setSaved] = useState(isSaved);
   const [likes, setLikes] = useState(likesCount);
   const [showComments, setShowComments] = useState(false);
-
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
 
+  // Verifica se o post é MEU para mostrar a lixeira
+  const currentUserId = localStorage.getItem("user_id");
+  const isMyPost = author.id === currentUserId;
+
+  // Atualiza estado se a prop mudar
   useEffect(() => {
     setIsFollowing(initialIsFollowing);
   }, [initialIsFollowing]);
@@ -69,16 +82,27 @@ export default function PostCard({
     ? new Date()
     : new Date(timestamp);
 
+  // --- SEGUIR ---
   const handleFollowUser = async () => {
     if (!author.id) return;
-
     try {
-      await api.post("/connections", {
-        user2: author.id,
-      });
+      await api.post("/connections", { user2: author.id });
       setIsFollowing(true);
     } catch (error) {
       console.error("Erro ao seguir", error);
+    }
+  };
+
+  // --- DELETAR ---
+  const handleDelete = async () => {
+    if (confirm("Tem certeza que deseja excluir este post?")) {
+      try {
+        await api.delete(`/activities/${id}`);
+        if (onDelete) onDelete(); // Recarrega o feed
+      } catch (error) {
+        console.error("Erro ao deletar", error);
+        alert("Erro ao excluir post.");
+      }
     }
   };
 
@@ -88,47 +112,49 @@ export default function PostCard({
     onLike?.(id);
   };
 
-  const handleComment = () => {
-    setShowComments(!showComments);
-    onComment?.(id);
-  };
-
-  const handleSave = () => {
-    setSaved(!saved);
-    onSave?.(id);
-  };
-
-  const handleShare = () => {
-    onShare?.(id);
-  };
-
   return (
     <Card className="p-6" data-testid={`card-post-${id}`}>
       <div className="flex gap-3 mb-4">
         <UserAvatar src={author.avatar} name={author.name} />
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <div
-              className="font-semibold text-foreground"
-              data-testid={`text-author-${id}`}
-            >
-              {author.name}
+          <div className="flex items-center justify-between">
+            {/* Lado Esquerdo: Nome + Botão Seguir */}
+            <div className="flex items-center gap-2">
+              <div
+                className="font-semibold text-foreground"
+                data-testid={`text-author-${id}`}
+              >
+                {author.name}
+              </div>
+
+              {/* Botão Seguir (Só se não for eu mesmo) */}
+              {!isMyPost &&
+                (isFollowing ? (
+                  <span className="text-xs font-medium text-green-600 flex items-center gap-1">
+                    <Check className="h-3 w-3" /> Seguindo
+                  </span>
+                ) : (
+                  <button
+                    onClick={handleFollowUser}
+                    className="text-xs font-medium text-blue-500 hover:text-blue-700 flex items-center gap-1 hover:underline"
+                  >
+                    • Seguir
+                  </button>
+                ))}
             </div>
 
-            {author.name !== currentUser.name &&
-              (isFollowing ? (
-                <span className="text-xs font-medium text-green-600 flex items-center gap-1">
-                  <Check className="h-3 w-3" /> Seguindo
-                </span>
-              ) : (
-                <button
-                  onClick={handleFollowUser}
-                  className="text-xs font-medium text-blue-500 hover:text-blue-700 flex items-center gap-1 hover:underline"
-                  title="Seguir usuário"
-                >
-                  • Seguir
-                </button>
-              ))}
+            {/* Lado Direito: Botão Deletar (Só se for meu post) */}
+            {isMyPost && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                onClick={handleDelete}
+                title="Excluir publicação"
+              >
+                <Trash className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
           <div
@@ -147,6 +173,7 @@ export default function PostCard({
         {content}
       </div>
 
+      {/* Imagem do Post */}
       {mediaUrl && (
         <div className="mb-4 rounded-lg overflow-hidden max-h-[500px]">
           {mediaType === "video" ? (
@@ -182,18 +209,18 @@ export default function PostCard({
           <Button
             variant="ghost"
             size="sm"
-            onClick={handleComment}
+            onClick={() => setShowComments(!showComments)}
             className="gap-2"
             data-testid={`button-comment-${id}`}
           >
             <MessageCircle className="h-5 w-5" />
+            {/* Contagem de Comentários */}
             <span data-testid={`text-comments-${id}`}>{commentsCount}</span>
           </Button>
           {sharesCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleShare}
               className="gap-2"
               data-testid={`button-share-${id}`}
             >
@@ -205,7 +232,6 @@ export default function PostCard({
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleSave}
           className={saved ? "text-primary" : ""}
           data-testid={`button-save-${id}`}
         >

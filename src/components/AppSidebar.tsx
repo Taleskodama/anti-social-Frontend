@@ -17,8 +17,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "./ui/sidebar";
-
 import { useLocation } from "wouter";
+
+import logo from "../assets/logo.jpg";
 
 const menuItems = [
   {
@@ -65,9 +66,6 @@ export function AppSidebar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user_id");
     localStorage.removeItem("user_name");
-
-    console.log("Logout realizado - Token removido");
-
     setLocation("/login");
   };
 
@@ -75,11 +73,14 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <div className="px-4 py-6">
-            <h2 className="text-xl font-bold text-foreground">
-              The Anti-Social
-            </h2>
+          <div className="px-4 py-6 flex justify-center">
+            <img
+              src={logo}
+              alt="The Anti-Social"
+              className="h-48 w-auto object-contain scale-150 mix-blend-screen"
+            />
           </div>
+
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
