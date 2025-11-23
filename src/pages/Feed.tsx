@@ -12,6 +12,8 @@ export default function Feed() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [followingIds, setFollowingIds] = useState<string[]>([]);
+
   const userName = localStorage.getItem("user_name") || "Você";
   const currentUserId = localStorage.getItem("user_id");
 
@@ -19,7 +21,20 @@ export default function Feed() {
 
   useEffect(() => {
     loadPosts();
+    if (currentUserId) {
+      loadFollowing();
+    }
   }, []);
+
+  async function loadFollowing() {
+    try {
+      const response = await api.get(`/connections/following/${currentUserId}`);
+      const ids = response.data.map((conn: any) => conn.user2.id);
+      setFollowingIds(ids);
+    } catch (error) {
+      console.error("Erro ao carregar seguindo", error);
+    }
+  }
 
   async function loadPosts() {
     try {
@@ -45,6 +60,7 @@ export default function Feed() {
         return {
           id: post.id,
           author: {
+            id: post.author?.id,
             name: post.author?.name || "Usuário",
             avatar: avatar1,
           },
@@ -54,7 +70,6 @@ export default function Feed() {
           timestamp: dataPost,
           likesCount: incentives.length,
           isLiked: isLikedByMe,
-
           commentsCount: post.comments ? post.comments.length : 0,
         };
       });
@@ -75,7 +90,6 @@ export default function Feed() {
         activityId: postId,
         type: "HEART",
       });
-
       loadPosts();
     } catch (error) {
       console.error("Erro ao curtir:", error);
@@ -119,6 +133,9 @@ export default function Feed() {
                 {...post}
                 currentUser={currentUser}
                 onLike={handleLike}
+                initialIsFollowing={
+                  post.author.id && followingIds.includes(post.author.id)
+                }
               />
             ))
           )}
