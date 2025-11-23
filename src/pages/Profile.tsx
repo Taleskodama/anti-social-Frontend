@@ -10,7 +10,7 @@ import {
   TabsTrigger,
 } from "../components/ui/tabs";
 import UserAvatar from "../components/UserAvatar";
-import PostCard from "../components/PostCard"; // Importante para a aba de posts
+import PostCard from "../components/PostCard";
 import api from "../services/api";
 
 const avatar1 = undefined;
@@ -20,7 +20,6 @@ export default function Profile() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Estados para as listas e contagens
   const [myPosts, setMyPosts] = useState<any[]>([]);
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
@@ -40,13 +39,11 @@ export default function Profile() {
         setUser(userRes.data);
 
         // 2. Pega TODOS os posts e filtra os meus
-        // (No futuro o backend teria uma rota /users/:id/posts, mas pro MVP filtramos aqui)
         const postsRes = await api.get("/activities");
         const myPostsFiltered = postsRes.data.filter(
           (p: any) => p.authorId === userId || p.author?.id === userId
         );
 
-        // Formata os posts igual no Feed para usar no PostCard
         const formattedPosts = myPostsFiltered.map((post: any) => {
           let dataPost = new Date();
           const dataVindaDoBanco = post.creationDate || post.created_at;
@@ -58,14 +55,19 @@ export default function Profile() {
           }
           return {
             ...post,
+            content: post.description || post.title,
             timestamp: dataPost,
             mediaUrl: post.mediaUrl,
             commentsCount: post.comments?.length || 0,
             likesCount: post.incentives?.length || 0,
-            author: { name: userRes.data.name, avatar: avatar1 }, // Garante dados do autor
+            author: { name: userRes.data.name, avatar: avatar1 },
           };
         });
-        setMyPosts(formattedPosts);
+
+        // Ordena do mais novo para o mais antigo
+        setMyPosts(
+          formattedPosts.sort((a: any, b: any) => b.timestamp - a.timestamp)
+        );
 
         // 3. Pega Seguidores
         const followersRes = await api.get(`/connections/followers/${userId}`);
@@ -75,7 +77,6 @@ export default function Profile() {
         const followingRes = await api.get(`/connections/following/${userId}`);
         setFollowing(followingRes.data);
       } else {
-        // Fallback se não tiver login
         setUser({
           name: userName || "Usuário",
           email: "usuario@exemplo.com",
@@ -128,7 +129,6 @@ export default function Profile() {
 
               <div className="flex gap-6 text-sm">
                 <div>
-                  {/* NÚMEROS REAIS AQUI */}
                   <span className="font-bold text-foreground">
                     {followers.length}
                   </span>{" "}
@@ -179,8 +179,11 @@ export default function Profile() {
                 <PostCard
                   key={post.id}
                   {...post}
-                  // Passamos currentUser para o card saber quem somos
                   currentUser={{ name: userData.name, avatar: avatar1 }}
+                  // --- ADICIONADO: Para atualizar ao deletar ---
+                  onDelete={loadFullProfile}
+                  // Opcional: Para atualizar ao curtir
+                  onLike={() => {}}
                 />
               ))
             )}
