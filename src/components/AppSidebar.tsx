@@ -18,8 +18,7 @@ import {
   SidebarMenuItem,
 } from "./ui/sidebar";
 import { useLocation } from "wouter";
-
-import logo from "../assets/logo.jpg";
+import logo from "../assets/logo.jpeg";
 
 const menuItems = [
   {
